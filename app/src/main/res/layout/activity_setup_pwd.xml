@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    tools:context=".SetupPwdActivity">
+    <TextView
+        android:id="@+id/info"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Create Password"
+        android:textSize="30dp"
+        android:textAlignment="center"
+        android:textStyle="bold"/>
+    <EditText
+        android:inputType="numberPassword"
+        android:maxLength="6"
+        android:id="@+id/currentPwd"
+        android:background="#D1D1D1"
+        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="20dp"
+        android:textColor="#fafafa"
+        android:hint="Current Password" />
+    <EditText
+        android:inputType="numberPassword"
+        android:maxLength="6"
+        android:id="@+id/pwd"
+        android:background="#D1D1D1"
+        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="20dp"
+        android:textColor="#fafafa"
+        android:hint="Password" />
+    <EditText
+        android:maxLength="6"
+        android:id="@+id/confirmPwd"
+        android:background="#D1D1D1"
+        android:padding="10dp"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_margin="20dp"
+        android:textColor="#fafafa"
+        android:inputType="numberPassword"
+        android:hint="Confirm Password" />
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="10dp">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Use Biometrics?"
+        android:gravity="center"
+        android:textSize="20dp"
+        android:layout_gravity="center"
+        android:layout_marginRight="30dp"/>
+    <ToggleButton
+        android:layout_gravity="left"
+        android:id="@+id/toggleButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:onClick="onToggleClick"/>
+</LinearLayout>
+    <Button
+        android:id="@+id/setPwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Done"
+        android:layout_margin="10dp"/>
+
+</LinearLayout>

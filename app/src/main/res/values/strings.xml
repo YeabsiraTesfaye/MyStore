@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">The Inventory Beta</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="web_client_id">1021596339227-qjh0fn64l4idvv9ok574r03524o55i7i.apps.googleusercontent.com</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <attr name="headerBackgroundColor" format="color|reference" />
+    <attr name="headerTextColor" format="color|reference" />
+    <attr name="headerTextColorSelected" format="color|reference" />
+
+    <attr name="monthBackgroundColorSelected" format="color|reference" />
+    <attr name="monthTextColor" format="color|reference" />
+    <attr name="monthTextColorDisabled" format="color|reference" />
+    <attr name="monthTextColorSelected" format="color|reference" />
+
+    <attr name="yearTextColor" format="color|reference" />
+    <attr name="yearTextColorSelected" format="color|reference" />
+    <!-- Preference Titles -->
+    <string name="messages_header">Account</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
+    <string name="title_activity_advanced">AdvancedActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+</resources>
