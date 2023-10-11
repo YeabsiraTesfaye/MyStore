@@ -16,6 +16,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -50,8 +51,6 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Sheet;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -82,6 +81,7 @@ public class AdvancedActivity extends AppCompatActivity {
     HashMap map = new HashMap();
     ArrayList barEntries;
     BarChart chart;
+    ImageButton showHideChart;
 
     int monthTotalSell=0;
 
@@ -504,6 +504,25 @@ public class AdvancedActivity extends AppCompatActivity {
                 labels.add("November");
                 labels.add("December");
                 chart = new BarChart(AdvancedActivity.this);
+                showHideChart = new ImageButton(AdvancedActivity.this);
+
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+                showHideChart.setLayoutParams(params);
+                showHideChart.setImageDrawable(getResources().getDrawable(R.drawable.baseline_arrow_circle_down_24));
+
+
+                showHideChart.setOnClickListener(click->{
+                    if(chart.getVisibility() == View.VISIBLE){
+                        chart.setVisibility(View.GONE);
+                        showHideChart.setImageDrawable(getResources().getDrawable(R.drawable.baseline_arrow_circle_up_24));
+
+                    }else{
+                        chart.setVisibility(View.VISIBLE);
+                        showHideChart.setImageDrawable(getResources().getDrawable(R.drawable.baseline_arrow_circle_down_24));
+                    }
+                });
+
                 XAxis xAxis = chart.getXAxis();
                 xAxis.setGranularity(2f);
                 xAxis.setGranularityEnabled(true);
@@ -518,6 +537,8 @@ public class AdvancedActivity extends AppCompatActivity {
 
                 data.setValueTextSize(10f);
                 chart.setData(data);
+                forGraph.removeAllViews();
+                forGraph.addView(showHideChart);
                 forGraph.addView(chart);
             }
         };
@@ -544,7 +565,7 @@ public class AdvancedActivity extends AppCompatActivity {
                             int sold = c.getSold();
                             String soldby = c.getSoldBy();
                             int total = c.getTotal();
-                            monthTotalSell = (sold*quantity)+ monthTotalSell;
+                            monthTotalSell = ((sold*quantity)-(bought*quantity))+ monthTotalSell;
                         }
 
                     }

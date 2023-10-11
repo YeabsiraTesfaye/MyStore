@@ -172,7 +172,7 @@ public class ReallocateItemActivity extends AppCompatActivity {
                             alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-
+                                    if(!toShop[0].trim().equals("")){
                                         int oldQuantity = i.getQuantity();
                                         i.setQuantity(oldQuantity-quantity.getValue());
                                         db.collection("Items").document(d.getId()).set(i).addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -191,7 +191,11 @@ public class ReallocateItemActivity extends AppCompatActivity {
                                                 });
                                             }
                                         });
-                                }
+                                    }else {
+                                        Toast.makeText(ReallocateItemActivity.this, "No shop selected", Toast.LENGTH_SHORT).show();
+                                    }
+
+                                        }
                             });
                             AlertDialog dialog = alert.create();
                             dialog.show();
