@@ -10,10 +10,15 @@ public class Credit {
     int ItemQuantity;
     int PartialPayments;
     Timestamp DueDate;
-    String id, itemId;
+    String id;
+    String itemId;
+    int Unpaid;
+
+
+    String shopId;
     public Credit() {
     }
-    public Credit(String itemName, String personName, String phone, int itemPrice, int itemQuantity, int partialPayments, Timestamp dueDate, String id, int unpaid, String itemId) {
+    public Credit(String itemName, String personName, String phone, int itemPrice, int itemQuantity, int partialPayments, Timestamp dueDate, String id, int unpaid, String itemId, String shopId) {
         this.ItemName = itemName;
         this.PersonName = personName;
         this.Phone = phone;
@@ -24,6 +29,7 @@ public class Credit {
         this.id = id;
         this.Unpaid = unpaid;
         this.itemId = itemId;
+        this.shopId = shopId;
     }
 
     public String getItemId() {
@@ -105,7 +111,13 @@ public class Credit {
         Unpaid = unpaid;
     }
 
-    int Unpaid;
 
+    public String getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
+    }
 
 }

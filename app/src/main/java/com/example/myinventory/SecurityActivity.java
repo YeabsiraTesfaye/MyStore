@@ -23,21 +23,44 @@ import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 
 import com.example.myinventory.R;
+import com.example.myinventory.ui.dashboard.DashboardFragment;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.concurrent.Executor;
 
 public class SecurityActivity extends AppCompatActivity {
     EditText pwd;
     int counter=0;
+    private FirebaseFirestore db;
+    SharedPreferences sh;
+    int shopsCount;
+    String shopId="";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        sh = getSharedPreferences("pref", Context.MODE_PRIVATE);
         setContentView(R.layout.activity_security);
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
             w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
+        db = FirebaseFirestore.getInstance();
+
+        shopsCount = sh.getInt("shopCount",0);
+
+//        db.collection("Shops").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+//            @Override
+//            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+//                shopsCount = queryDocumentSnapshots.size();
+//
+//            }
+//        });
 
         // Initialising msgtext and loginbutton
         pwd = findViewById(R.id.pwd);
@@ -55,7 +78,7 @@ public class SecurityActivity extends AppCompatActivity {
 
             // this means that the device doesn't have fingerprint sensor
             case BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE:
-                Toast.makeText(this, "This device doesnot have a fingerprint sensor", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "This device does not have a fingerprint sensor", Toast.LENGTH_SHORT).show();
                 break;
 
             // this means that biometric sensor is not available
@@ -82,7 +105,14 @@ public class SecurityActivity extends AppCompatActivity {
             public void onAuthenticationSucceeded(@NonNull BiometricPrompt.AuthenticationResult result) {
                 super.onAuthenticationSucceeded(result);
 //                Toast.makeText(getApplicationContext(), "Login Success", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(SecurityActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+
+                if(shopsCount == 0) {
+                    Intent i=new Intent(SecurityActivity.this, AddShopActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(i);
+                }else{
+                    Intent i=new Intent(SecurityActivity.this, ShopSelectorActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(i);
+                }
             }
             @Override
             public void onAuthenticationFailed() {
@@ -99,7 +129,6 @@ public class SecurityActivity extends AppCompatActivity {
                 biometricPrompt.authenticate(promptInfo);
             }
         });
-        SharedPreferences sh = getSharedPreferences("MySharedPref", Context.MODE_PRIVATE);
         Boolean fp = sh.getBoolean("fp", false);
 
         if(fp){
@@ -110,7 +139,6 @@ public class SecurityActivity extends AppCompatActivity {
     }
 
     public void pwdInput(View view) {
-        SharedPreferences sh = getSharedPreferences("MySharedPref", Context.MODE_PRIVATE);
         String s1 = sh.getString("password", "");
         String text = pwd.getText().toString();
 
@@ -122,8 +150,11 @@ public class SecurityActivity extends AppCompatActivity {
             }
             if(counter == 6){
                 if(s1.trim().equals(pwd.getText().toString())){
-                    startActivity(new Intent(SecurityActivity.this, MainActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-
+                    if(shopsCount == 0) {
+                        startActivity(new Intent(SecurityActivity.this, AddShopActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    }else{
+                        startActivity(new Intent(SecurityActivity.this, ShopSelectorActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                    }
                 }else{
                     counter = 0;
                     pwd.setText("");

@@ -13,4 +13,6 @@
     <color name="light_blue_A400">#FF00B0FF</color>
     <color name="black_overlay">#66000000</color>
     <color name="lavender">#8692f7</color>
+    <color name="disabled">#CCCCCC</color>
+    <color name="darkerGrey">#616161</color>
 </resources>

@@ -1,10 +1,17 @@
 package com.example.myinventory.ui.orders;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,6 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.core.widget.NestedScrollView;
 import androidx.fragment.app.Fragment;
 
+import com.example.myinventory.MainActivity;
 import com.example.myinventory.R;
 import com.example.myinventory.databinding.FragmentDashboardBinding;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -54,6 +62,11 @@ public class OrdersFragment extends Fragment {
     TextInputLayout phoneTV;
     TextView dp;
     Boolean action = false;
+    private SharedPreferences preferences;
+    private String shopId;
+    private String shopName;
+    View root;
+    MainActivity mainActivity = new MainActivity();
 
     public static OrdersFragment newInstance(int index) {
         OrdersFragment fragment = new OrdersFragment();
@@ -65,12 +78,16 @@ public class OrdersFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
 
+        preferences = getActivity().getSharedPreferences("pref",MODE_PRIVATE);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        shopId = mainActivity.shopId;
+        shopName = mainActivity.shopName;
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
-        View root = binding.getRoot();
+        root = binding.getRoot();
         ll = root.findViewById(R.id.ll);
         sv = root.findViewById(R.id.nested1);
         fab = root.findViewById(R.id.fab);
-        animator(root,inflater,container);
+        animator();
         save = root.findViewById(R.id.save);
 
         orderTV = root.findViewById(R.id.order);
@@ -126,10 +143,10 @@ public class OrdersFragment extends Fragment {
         loadingPB = root.findViewById(R.id.idProgressBar);
         db = FirebaseFirestore.getInstance();
         loadingPB = root.findViewById(R.id.idProgressBar);
-        getItems(db,inflater,container);
+        getItems();
         return root;
     }
-    void animator(View root, LayoutInflater inflater, ViewGroup container){
+    void animator(){
         front = root.findViewById(R.id.nested1);
         back = root.findViewById(R.id.nested);
         back.setVisibility(View.INVISIBLE);
@@ -154,101 +171,119 @@ public class OrdersFragment extends Fragment {
                 back.startAnimation(animate);
                 isFront =true;
                 if(action){
-                    getItems(db,inflater,container);
+                    getItems();
                     action = false;
                 }
                 Handler handler = new Handler();
                 Runnable runnable = () -> {
                     back.setVisibility(View.GONE);
                     front.setVisibility(View.VISIBLE);
+                    fab.setIconResource(R.drawable.baseline_add_circle_24);
+                    fab.setText("ADD ORDERS");
                 };handler.postDelayed(runnable, 200);
             }
         });
     }
     private void addDataToFirestore(String order, String orderedBy, String phone, int quantity, String date) {
-        loadingPB.setVisibility(View.VISIBLE);
-        CollectionReference dbOrder = db.collection("Orders");
-        Order data  = new Order(order, orderedBy, phone, date, quantity);
-        dbOrder.add(data).addOnSuccessListener(documentReference -> {
-            Toast.makeText(getContext(), "Order saved successfully", Toast.LENGTH_SHORT).show();
-            loadingPB.setVisibility(View.GONE);
-            action = true;
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Fail to add Item \n" + e, Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
-    void getItems(FirebaseFirestore db, LayoutInflater inflater, ViewGroup container){
-        ll.removeAllViews();
-        db.collection("Orders").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                if (!queryDocumentSnapshots.isEmpty()) {
-                    loadingPB.setVisibility(View.GONE);
-                    List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
-                    for (DocumentSnapshot d : list) {
-                        Order c = d.toObject(Order.class);
-                        View layout = inflater.inflate(R.layout.list_order, null, false);
-                        layout.setTag(d.getId()+"");
-                        TextView order = layout.findViewById(R.id.order);
-                        TextView orderedBy = layout.findViewById(R.id.orderedBy);
-                        TextView phone = layout.findViewById(R.id.phone);
-                        TextView date = layout.findViewById(R.id.date);
-                        TextView quantity = layout.findViewById(R.id.quantity);
-                        Button save = layout.findViewById(R.id.done);
-
-                        if(c.getPhone() == null || c.getPhone().equals("")){
-                            phone.setVisibility(View.GONE);
-                        }
-                        order.setText(c.getOrder());
-                        orderedBy.setText(c.getOrderedBy());
-                        phone.setText(c.getPhone());
-                        date.setText(c.getDate());
-                        quantity.setText(c.getQuantity()+"");
-                        ll.addView(layout);
-                        save.setOnClickListener(v -> {
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-                            builder.setTitle(c.getOrder());
-                            builder.setMessage("Are you sure?");
-                            builder.setPositiveButton("OK", (dialog, which) -> {
-                                deleteItem(d.getId());
-                                ll.removeView(layout);
-                            });
-                            builder.setNegativeButton("CANCEL",((dialog, which) -> {
-                            }));
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
-                        });
-                    }
-                } else {
-//                    Toast.makeText(getContext(), "No data found.", Toast.LENGTH_SHORT).show();
-                    loadingPB.setVisibility(View.GONE);
+        if(isConnected()){
+            loadingPB.setVisibility(View.VISIBLE);
+            CollectionReference dbOrder = db.collection("Orders");
+            Order data  = new Order(order, orderedBy, phone, date, quantity,shopId);
+            dbOrder.add(data).addOnSuccessListener(documentReference -> {
+                Toast.makeText(getContext(), "Order saved successfully", Toast.LENGTH_SHORT).show();
+                loadingPB.setVisibility(View.GONE);
+                action = true;
+                fab.performClick();
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getContext(), "Fail to add Item \n" + e, Toast.LENGTH_SHORT).show();
                 }
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(getContext(), "Fail to get the data.", Toast.LENGTH_SHORT).show();
-            }
-        });
+            });
+        }else{
+            Toast.makeText(getContext(), "No Internet Connection!", Toast.LENGTH_SHORT).show();
+        }
+
+    }
+    void getItems(){
+        if(isConnected()){
+            ll.removeAllViews();
+            db.collection("Orders").whereEqualTo("shopId",shopId).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+                @Override
+                public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        loadingPB.setVisibility(View.GONE);
+                        List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
+                        for (DocumentSnapshot d : list) {
+                            Order c = d.toObject(Order.class);
+                            View layout = getLayoutInflater().inflate(R.layout.list_order, null, false);
+                            layout.setTag(d.getId()+"");
+                            TextView order = layout.findViewById(R.id.order);
+                            TextView orderedBy = layout.findViewById(R.id.orderedBy);
+                            TextView phone = layout.findViewById(R.id.phone);
+                            TextView date = layout.findViewById(R.id.date);
+                            TextView quantity = layout.findViewById(R.id.quantity);
+                            Button save = layout.findViewById(R.id.done);
+
+                            if(c.getPhone() == null || c.getPhone().equals("")){
+                                phone.setVisibility(View.GONE);
+                            }
+                            order.setText(c.getOrder());
+                            orderedBy.setText(c.getOrderedBy());
+                            phone.setText(c.getPhone());
+                            date.setText(c.getDate());
+                            quantity.setText(c.getQuantity()+"");
+                            ll.addView(layout);
+                            save.setOnClickListener(v -> {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+                                builder.setTitle(c.getOrder());
+                                builder.setMessage("Are you sure?");
+                                builder.setPositiveButton("OK", (dialog, which) -> {
+                                    deleteItem(d.getId());
+                                    ll.removeView(layout);
+                                });
+                                builder.setNegativeButton("CANCEL",((dialog, which) -> {
+                                }));
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            });
+                        }
+                    } else {
+//                    Toast.makeText(getContext(), "No data found.", Toast.LENGTH_SHORT).show();
+                        loadingPB.setVisibility(View.GONE);
+                    }
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(getContext(), "Fail to get the data.", Toast.LENGTH_SHORT).show();
+                }
+            });
+        }else{
+            Toast.makeText(getContext(), "No Internet Connection!", Toast.LENGTH_SHORT).show();
+        }
+
     }
     private void deleteItem(String id) {
-        this.db.collection("Orders").
-        document(id).
-        delete().
-        addOnCompleteListener(new OnCompleteListener<Void>() {
-            @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    Toast.makeText(getContext(), "Order has been done successfully", Toast.LENGTH_SHORT).show();
+        if(isConnected()){
+            this.db.collection("Orders").
+                    document(id).
+                    delete().
+                    addOnCompleteListener(new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(getContext(), "Order has been done successfully", Toast.LENGTH_SHORT).show();
 //                            getItems(db, inflater, container);
-                } else {
-                    Toast.makeText(getContext(), "Fail to delete the Order. ", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+                            } else {
+                                Toast.makeText(getContext(), "Fail to delete the Order. ", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                    });
+        }else{
+            Toast.makeText(getContext(), "No Internet Connection!", Toast.LENGTH_SHORT).show();
+        }
+
     }
     @Override
     public void onDestroyView() {
@@ -272,5 +307,17 @@ public class OrdersFragment extends Fragment {
             }
             return false;
         });
+    }
+    public boolean isConnected() {
+        boolean connected = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager)getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo nInfo = cm.getActiveNetworkInfo();
+            connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+            return connected;
+        } catch (Exception e) {
+            Log.e("Connectivity Exception", e.getMessage());
+        }
+        return connected;
     }
 }

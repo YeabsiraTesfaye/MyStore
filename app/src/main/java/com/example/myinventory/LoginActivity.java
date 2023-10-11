@@ -3,6 +3,8 @@ package com.example.myinventory;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,28 +29,37 @@ import com.google.android.gms.common.SignInButton;
 import com.google.android.gms.common.api.ApiException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class LoginActivity extends AppCompatActivity {
 
     SignInButton btSignIn;
     GoogleSignInClient googleSignInClient;
     FirebaseAuth firebaseAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        if(!isConnected()){
+            startActivity(new Intent(LoginActivity.this, NoInternetActivity.class));
+        }
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
             w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
+
         // Assign variable
         btSignIn = findViewById(R.id.sign_in_button);
 
@@ -74,7 +85,7 @@ public class LoginActivity extends AppCompatActivity {
         FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
         // Check condition
         if (firebaseUser != null) {
-            SharedPreferences sh = getSharedPreferences("MySharedPref", Context.MODE_PRIVATE);
+            SharedPreferences sh = getSharedPreferences("pref", Context.MODE_PRIVATE);
             String s1 = sh.getString("password", "");
             if(s1.trim().equals("")){
                 // When user already sign in redirect to profile activity
@@ -117,7 +128,7 @@ public class LoginActivity extends AppCompatActivity {
                                 // Check condition
                                 if (task.isSuccessful()) {
                                     // When task is successful redirect to profile activity display Toast
-                                    SharedPreferences sh = getSharedPreferences("MySharedPref", Context.MODE_PRIVATE);
+                                    SharedPreferences sh = getSharedPreferences("pref", Context.MODE_PRIVATE);
                                     String s1 = sh.getString("password", "");
                                     if(s1.trim().equals("")){
                                         // When user already sign in redirect to profile activity
@@ -147,5 +158,16 @@ public class LoginActivity extends AppCompatActivity {
     private void displayToast(String s) {
         Toast.makeText(getApplicationContext(), s, Toast.LENGTH_SHORT).show();
     }
-
+    public boolean isConnected() {
+        boolean connected = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo nInfo = cm.getActiveNetworkInfo();
+            connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+            return connected;
+        } catch (Exception e) {
+            Log.e("Connectivity Exception", e.getMessage());
+        }
+        return connected;
+    }
 }

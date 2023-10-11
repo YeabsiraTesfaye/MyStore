@@ -3,14 +3,19 @@ package com.example.myinventory;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
@@ -73,7 +78,7 @@ public class AdvancedActivity extends AppCompatActivity {
     List<DocumentSnapshot> list;
     ArrayList barEntriesArrayList;
     ScrollView dayWrapper,monthWrapper,yearWrapper;
-    TextView dayInfo, monthInfo, yearInfo;
+    TextView dayInfo, monthInfo, yearInfo,shopNameTV;
     HashMap map = new HashMap();
     ArrayList barEntries;
     BarChart chart;
@@ -81,9 +86,22 @@ public class AdvancedActivity extends AppCompatActivity {
     int monthTotalSell=0;
 
     private static final String EXCEL_SHEET_NAME = "Sheet1";
+    private SharedPreferences preferences;
+    private String shopId;
+    private String shopName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(!isConnected()){
+            startActivity(new Intent(AdvancedActivity.this, NoInternetActivity.class));
+        }
+
+        preferences = getSharedPreferences("pref",MODE_PRIVATE);
+        Bundle b = getIntent().getExtras();
+        shopId = b.getString("shopId");
+        shopName = b.getString("shopName");
         binding = ActivityAdvancedBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
@@ -126,6 +144,10 @@ public class AdvancedActivity extends AppCompatActivity {
         dayWrapper = findViewById(R.id.dayWrapper);
         monthWrapper = findViewById(R.id.monthWrapper);
         yearWrapper = findViewById(R.id.yearWrapper);
+
+        shopNameTV = findViewById(R.id.shopName);
+        System.out.println(shopName+" "+shopId);
+        shopNameTV.setText(shopName);
 
         dayInfo = findViewById(R.id.dayInfo);
         monthInfo = findViewById(R.id.monthInfo);
@@ -224,7 +246,7 @@ public class AdvancedActivity extends AppCompatActivity {
 
     void transactionFilter(int day, int month, int year){
         ArrayList<Transaction> newList = new ArrayList<>();
-        db.collection("Transactions").orderBy("date").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        db.collection("Transactions").whereEqualTo("shopId",shopId).orderBy("date").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
@@ -302,10 +324,6 @@ public class AdvancedActivity extends AppCompatActivity {
                             }
                         }
                     }
-
-
-
-
                 }else {
                     Toast.makeText(AdvancedActivity.this, "No data found in Database", Toast.LENGTH_SHORT).show();
 
@@ -322,6 +340,7 @@ public class AdvancedActivity extends AppCompatActivity {
         int totalSell=0;
         int totalPaid=0;
         int totalUnpaid=0;
+        int totalProfit=0;
         if(type == 1){
             dayLL.removeAllViews();
         }else if(type == 2){
@@ -343,6 +362,7 @@ public class AdvancedActivity extends AppCompatActivity {
             TextView soldByTV = view.findViewById(R.id.soldBy);
             TextView paidTV = view.findViewById(R.id.paid);
             TextView unpaidTV = view.findViewById(R.id.unpaid);
+            TextView profitTV = view.findViewById(R.id.profit);
             TextView dateTV = view.findViewById(R.id.date);
 
 
@@ -370,6 +390,7 @@ public class AdvancedActivity extends AppCompatActivity {
                 unpaidTV.setText(unpaid+"ETB");
                 soldByTV.setText(soldBy);
                 totalTV.setText(total+" ETB");
+                profitTV.setText(((quantity*sold)-(quantity*bought))+" ETB");
                 dateTV.setText(date.toDate().toString());
                 if(counter%2 == 0){
                     view.setBackgroundColor(Color.parseColor("#FFDADADA"));
@@ -387,6 +408,7 @@ public class AdvancedActivity extends AppCompatActivity {
             totalSell += (c.getQuantity()*c.getSold());
             totalPaid += (c.getPaid());
             totalUnpaid += (c.getUnpaid());
+            totalProfit += ((quantity*sold)-(quantity*bought));
         }
 
         if(type == 1){
@@ -398,6 +420,7 @@ public class AdvancedActivity extends AppCompatActivity {
             TextView totalSold = findViewById(R.id.totalSold);
             TextView totalPaidTV = findViewById(R.id.totalPaid);
             TextView totalUnpaidTV = findViewById(R.id.totalUnpaid);
+            TextView totalProfitTV = findViewById(R.id.totalProfit);
             dayWrapper.setVisibility(View.VISIBLE);
             monthWrapper.setVisibility(View.GONE);
             yearWrapper.setVisibility(View.GONE);
@@ -409,6 +432,7 @@ public class AdvancedActivity extends AppCompatActivity {
             totalSold.setText(totalSell+" ETB");
             totalPaidTV.setText(totalPaid+" ETB");
             totalUnpaidTV.setText(totalUnpaid+" ETB");
+            totalProfitTV.setText(totalProfit+" ETB");
         }else if(type == 2){
             if(chart != null){
 
@@ -418,6 +442,7 @@ public class AdvancedActivity extends AppCompatActivity {
             TextView totalSold = findViewById(R.id.totalSoldMonth);
             TextView totalPaidTV = findViewById(R.id.totalPaidMonth);
             TextView totalUnpaidTV = findViewById(R.id.totalUnpaidMonth);
+            TextView totalProfitTV = findViewById(R.id.totalMonthProfit);
             monthWrapper.setVisibility(View.VISIBLE);
             dayWrapper.setVisibility(View.GONE);
             yearWrapper.setVisibility(View.GONE);
@@ -429,10 +454,12 @@ public class AdvancedActivity extends AppCompatActivity {
             totalSold.setText(totalSell+" ETB");
             totalPaidTV.setText(totalPaid+" ETB");
             totalUnpaidTV.setText(totalUnpaid+" ETB");
+            totalProfitTV.setText(totalProfit+" ETB");
         }else if(type == 3){
             TextView totalSold = findViewById(R.id.totalSoldYear);
             TextView totalPaidTV = findViewById(R.id.totalPaidYear);
             TextView totalUnpaidTV = findViewById(R.id.totalUnpaidYear);
+            TextView totalProfitTV = findViewById(R.id.totalYearProfit);
 
             yearWrapper.setVisibility(View.VISIBLE);
             dayWrapper.setVisibility(View.GONE);
@@ -445,6 +472,7 @@ public class AdvancedActivity extends AppCompatActivity {
             totalSold.setText(totalSell+" ETB");
             totalPaidTV.setText(totalPaid+" ETB");
             totalUnpaidTV.setText(totalUnpaid+" ETB");
+            totalProfitTV.setText(totalProfit+" ETB");
 
             getEntries(year);
 
@@ -496,7 +524,7 @@ public class AdvancedActivity extends AppCompatActivity {
         handler.postDelayed(runnable, 1000);
     }
     void getMonthTotalSell(int month, int year){
-        db.collection("Transactions").orderBy("date").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        db.collection("Transactions").whereEqualTo("shopId",shopId).orderBy("date").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
@@ -562,6 +590,17 @@ public class AdvancedActivity extends AppCompatActivity {
 
         }
     }
-
+    public boolean isConnected() {
+        boolean connected = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo nInfo = cm.getActiveNetworkInfo();
+            connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+            return connected;
+        } catch (Exception e) {
+            Log.e("Connectivity Exception", e.getMessage());
+        }
+        return connected;
+    }
 
 }

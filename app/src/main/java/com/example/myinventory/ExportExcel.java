@@ -61,6 +61,9 @@ public class ExportExcel {
         cell.setCellValue("Unpaid");
 
         cell = headerRow.createCell(9);
+        cell.setCellValue("Profit");
+
+        cell = headerRow.createCell(10);
         cell.setCellValue("Date");
 
         for(int  i=0; i<dataList.size(); i++){
@@ -96,6 +99,9 @@ public class ExportExcel {
             cell.setCellValue(dataList.get(i).getUnpaid());
 
             cell = rowData.createCell(9);
+            cell.setCellValue((dataList.get(i).getQuantity()*dataList.get(i).getSold())-(dataList.get(i).getQuantity()*dataList.get(i).getBought()));
+
+            cell = rowData.createCell(10);
             cell.setCellValue(dataList.get(i).getDate().toDate().toString());
         }
 
@@ -103,7 +109,7 @@ public class ExportExcel {
 
         String extStorageDirectory = Environment.getExternalStorageDirectory()
                 .toString();
-        File folder = new File(extStorageDirectory, "TheInventory");// Name of the folder you want to keep your file in the local storage.
+        File folder = new File(extStorageDirectory, "My Store");// Name of the folder you want to keep your file in the local storage.
         folder.mkdir(); //creating the folder
         File file = new File(folder, fileName+".xls");
         if(file.exists()) {

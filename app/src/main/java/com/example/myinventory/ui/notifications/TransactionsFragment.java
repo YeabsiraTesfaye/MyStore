@@ -1,11 +1,14 @@
 package com.example.myinventory.ui.notifications;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +24,7 @@ import androidx.fragment.app.Fragment;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.demogorgorn.monthpicker.MonthPickerDialog;
+import com.example.myinventory.MainActivity;
 import com.example.myinventory.R;
 import com.example.myinventory.databinding.FragmentNotificationsBinding;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -41,8 +45,8 @@ public class TransactionsFragment extends Fragment {
     int year, month = 0;
     LinearLayout ll;
     private FirebaseFirestore db;
-    private FragmentNotificationsBinding binding;
     ExtendedFloatingActionButton fab;
+    FragmentNotificationsBinding binding;
     TextView textView;
     NestedScrollView nsv;
     LinearLayout title;
@@ -52,17 +56,26 @@ public class TransactionsFragment extends Fragment {
     int totalBought = 0;
     int totalPaid = 0;
     int totalUnpaid = 0;
+    int totalProfit = 0;
     LayoutInflater inflater;
     SharedPreferences preferences;
+    String shopId;
+    private String shopName;
+    View root;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
+        binding = FragmentNotificationsBinding.inflate(inflater, container, false);
+        root = binding.getRoot();
         preferences = this.getActivity().getSharedPreferences("pref", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putBoolean("refresh", true);
         editor.commit();
 
-        binding = FragmentNotificationsBinding.inflate(inflater, container, false);
+        MainActivity mainActivity = (MainActivity) getActivity();
+        shopId = mainActivity.shopId;
+        shopName = mainActivity.shopName;
+
         View root = binding.getRoot();
         this.inflater = inflater;
         db = FirebaseFirestore.getInstance();
@@ -142,10 +155,11 @@ public class TransactionsFragment extends Fragment {
 
         totalPaid = 0;
         totalUnpaid = 0;
+        totalProfit = 0;
         textView.setText(map.get(month + 1) + "-" + day + "-" + year);
 
         ll.removeAllViews();
-        db.collection("Transactions").orderBy("date").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+        db.collection("Transactions").whereEqualTo("shopId",shopId).orderBy("date").get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
                 if (!queryDocumentSnapshots.isEmpty()) {
@@ -153,7 +167,7 @@ public class TransactionsFragment extends Fragment {
                     List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
                     for (DocumentSnapshot d : list) {
 
-                        View view = getLayoutInflater().inflate(R.layout.table_view, binding.getRoot(), false);
+                        View view = getLayoutInflater().inflate(R.layout.table_view, null, false);
 
                         counter++;
                         TextView itemTV = view.findViewById(R.id.item);
@@ -165,6 +179,7 @@ public class TransactionsFragment extends Fragment {
                         TextView soldByTV = view.findViewById(R.id.soldBy);
                         TextView paidTV = view.findViewById(R.id.paid);
                         TextView unpaidTV = view.findViewById(R.id.unpaid);
+                        TextView profitTV = view.findViewById(R.id.profit);
                         TextView dateTV = view.findViewById(R.id.date);
                         Transaction c = d.toObject(Transaction.class);
                         String item = c.getItem();
@@ -191,6 +206,7 @@ public class TransactionsFragment extends Fragment {
                             dateTV.setText(date.toDate().toString());
                             paidTV.setText(paid+" ETB");
                             unpaidTV.setText(unpaid+" ETB");
+                            profitTV.setText(((sold*quantity)-(bought*quantity)) + " ETB");
                             if(counter%2 == 0){
                                 view.setBackgroundColor(Color.parseColor("#FFDADADA"));
                             }else{
@@ -201,16 +217,19 @@ public class TransactionsFragment extends Fragment {
                             totalBought = (bought*quantity)+totalBought;
                             totalPaid += paid;
                             totalUnpaid += unpaid;
+                            totalProfit += ((sold*quantity)-(bought*quantity));
                         }
                     }
-                    TextView totalSoldTV = binding.getRoot().findViewById(R.id.totalSold);
-                    TextView totalBoughtTV = binding.getRoot().findViewById(R.id.totalBought);
-                    TextView totalPaidTV = binding.getRoot().findViewById(R.id.totalPaid);
-                    TextView totalUnpaidTV = binding.getRoot().findViewById(R.id.totalUnpaid);
+                    TextView totalSoldTV = root.findViewById(R.id.totalSold);
+                    TextView totalBoughtTV = root.findViewById(R.id.totalBought);
+                    TextView totalPaidTV = root.findViewById(R.id.totalPaid);
+                    TextView totalUnpaidTV = root.findViewById(R.id.totalUnpaid);
+                    TextView totalProfitTV = root.findViewById(R.id.totalProfit);
                     totalSoldTV.setText(totalSell+" ETB");
                     totalBoughtTV.setText(totalBought+" ETB");
                     totalPaidTV.setText(totalPaid+" ETB");
                     totalUnpaidTV.setText(totalUnpaid+" ETB");
+                    totalProfitTV.setText(totalProfit+" ETB");
                     totalBought = 0;
                     totalSell = 0;
                 } else {
@@ -228,5 +247,18 @@ public class TransactionsFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        getView().setFocusableInTouchMode(true);
+        getView().requestFocus();
+        getView().setOnKeyListener((v, keyCode, event) -> {
+            if( keyCode == KeyEvent.KEYCODE_BACK )
+            {
+                return true;
+            }
+            return false;
+        });
     }
 }

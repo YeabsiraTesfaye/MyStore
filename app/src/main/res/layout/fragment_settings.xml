@@ -143,29 +143,7 @@
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:text="Change Password"/>
             </LinearLayout>
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginHorizontal="20dp">
-                    <ImageView
-                        android:layout_gravity="center"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:src="@drawable/baseline_logout_24"/>
-                    <Button
 
-                        android:id="@+id/logoutBtn"
-                        android:paddingHorizontal="0dp"
-                        android:textStyle="bold"
-                        android:layout_marginHorizontal="20dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:gravity="left|center"
-                        android:textColor="@color/black"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:text="Logout"/>
-                </LinearLayout>
 
             </LinearLayout>
             <LinearLayout
@@ -173,7 +151,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/white"
-                android:orientation="vertical">
+                android:orientation="vertical"
+                android:layout_marginBottom="20dp">
                 <TextView
                     android:layout_marginHorizontal="20dp"
                     android:layout_width="match_parent"
@@ -203,7 +182,110 @@
                         android:background="?attr/selectableItemBackgroundBorderless"
                         android:text="Full transaction detail"/>
                 </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginHorizontal="20dp">
+                    <ImageView
+                        android:layout_gravity="center"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/baseline_store_24"/>
+                    <Button
+                        android:id="@+id/shop"
+                        android:paddingHorizontal="0dp"
+                        android:textStyle="bold"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:gravity="left"
+                        android:textColor="@color/black"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:text="ADD SHOP"/>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginHorizontal="20dp">
+                    <ImageView
+                        android:layout_gravity="center"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/baseline_drive_file_move_24"/>
+                    <Button
+
+                        android:id="@+id/allocate"
+                        android:paddingHorizontal="0dp"
+                        android:textStyle="bold"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:gravity="left|center"
+                        android:textColor="@color/black"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:text="Reallocate Item"/>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginHorizontal="20dp">
+                    <ImageView
+                        android:layout_gravity="center"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/baseline_table_view_24"/>
+                    <Button
+                        android:id="@+id/itemsFromExcel"
+                        android:paddingHorizontal="0dp"
+                        android:textStyle="bold"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:gravity="left"
+                        android:textColor="@color/black"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:text="Import items from excel"/>
+                </LinearLayout>
             </LinearLayout>
+
+            <LinearLayout
+                android:paddingVertical="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:layout_marginBottom="20dp"
+                android:orientation="vertical">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginHorizontal="20dp">
+                    <ImageView
+                        android:layout_gravity="center"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:src="@drawable/baseline_logout_24"/>
+                    <Button
+
+                        android:id="@+id/logoutBtn"
+                        android:paddingHorizontal="0dp"
+                        android:textStyle="bold"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:gravity="left|center"
+                        android:textColor="@color/black"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:text="Logout"/>
+                </LinearLayout>
+            </LinearLayout>
+
+
             </LinearLayout>
 
 

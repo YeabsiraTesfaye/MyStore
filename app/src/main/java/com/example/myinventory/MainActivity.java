@@ -1,8 +1,12 @@
 package com.example.myinventory;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -42,6 +46,8 @@ public class MainActivity extends AppCompatActivity{
     private ViewPager mViewPager;
     private TabLayout mTabLayout;
     private FirebaseAuth firebaseAuth;
+    public String shopId = "";
+    public String shopName = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -49,17 +55,28 @@ public class MainActivity extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        if(!isConnected()){
+            startActivity(new Intent(MainActivity.this, NoInternetActivity.class));
+        }
+
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
             w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
+        shopId = getIntent().getExtras().getString("shopId");
+        shopName = getIntent().getExtras().getString("shopName");
+
         mToolbar = findViewById(R.id.toolbar);
         mViewPager = findViewById(R.id.viewpager);
         mTabLayout = findViewById(R.id.tabs);
         setSupportActionBar(mToolbar);
         setupViewPager(mViewPager);
         mTabLayout.setupWithViewPager(mViewPager);
+        Bundle bundle = new Bundle();
+        bundle.putString("shopId", shopId);
+        DashboardFragment fragobj = new DashboardFragment();
+        fragobj.setArguments(bundle);
     }
 
     private void setupViewPager(ViewPager viewPager) {
@@ -163,4 +180,19 @@ public class MainActivity extends AppCompatActivity{
         });
         return super.onCreateOptionsMenu(menu);
     }
+
+    public boolean isConnected() {
+        boolean connected = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo nInfo = cm.getActiveNetworkInfo();
+            connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
+            return connected;
+        } catch (Exception e) {
+            Log.e("Connectivity Exception", e.getMessage());
+        }
+        return connected;
+    }
+
+
 }

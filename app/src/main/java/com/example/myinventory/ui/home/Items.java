@@ -3,7 +3,7 @@ package com.example.myinventory.ui.home;
 public class Items {
  
     // variables for storing our data.
-    private String name, Description, ImageUri;
+    private String name, Description, ImageUri, shopId;
     Integer quantity, buy, sell;
  
     public Items() {
@@ -12,13 +12,14 @@ public class Items {
     }
  
     // Constructor for all variables.
-    public Items(String name, String Description, Integer quantity, Integer buy, Integer sell, String ImageUri) {
+    public Items(String name, String Description, Integer quantity, Integer buy, Integer sell, String ImageUri,String shopId) {
         this.name = name;
         this.Description = Description;
         this.quantity = quantity;
         this.buy = buy;
         this.sell = sell;
         this.ImageUri = ImageUri;
+        this.shopId = shopId;
     }
  
     // getter methods for all variables.
@@ -66,5 +67,13 @@ public class Items {
 
     public void setUri(String ImageUri) {
         this.ImageUri = ImageUri;
+    }
+
+    public String getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
     }
 }

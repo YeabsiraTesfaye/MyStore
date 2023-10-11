@@ -25,7 +25,7 @@ public class Transaction {
         this.id = id;
     }
 
-    String id, itemID;
+    String id, itemID, shopId;
     Timestamp date;
     int bought,sold,quantity,total, paid, unpaid;
 
@@ -48,7 +48,7 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(String item, String description, String soldBy, Timestamp date, int bought, int sold, int quantity, int total, int paid, int unpaid, String id, String itemID) {
+    public Transaction(String item, String description, String soldBy, Timestamp date, int bought, int sold, int quantity, int total, int paid, int unpaid, String id, String itemID, String shopId) {
         this.item = item;
         this.description = description;
         this.soldBy = soldBy;
@@ -61,6 +61,7 @@ public class Transaction {
         this.unpaid = unpaid;
         this.id = id;
         this.itemID = itemID;
+        this.shopId = shopId;
     }
 
     public String getItem() {
@@ -117,5 +118,13 @@ public class Transaction {
 
     public void setTotal(int total) {
         this.total = total;
+    }
+
+    public String getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
     }
 }

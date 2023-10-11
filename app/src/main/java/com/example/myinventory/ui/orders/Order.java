@@ -16,18 +16,20 @@ public class Order {
 
     public String phone;
     public int quantity;
+    String shopId;
 
     public Order() {
         // empty constructor
         // required for Firebase.
     }
 
-    public Order(String order, String orderedBy, String phone, String date, int quantity){
+    public Order(String order, String orderedBy, String phone, String date, int quantity, String shopId){
         this.order = order;
         this.orderedBy = orderedBy;
         this.date = date;
         this.quantity = quantity;
         this.phone = phone;
+        this.shopId = shopId;
     }
 
     public String getOrder() {
@@ -60,5 +62,13 @@ public class Order {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public String getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
     }
 }

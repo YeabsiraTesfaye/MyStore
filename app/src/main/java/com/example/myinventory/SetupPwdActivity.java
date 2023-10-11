@@ -6,8 +6,11 @@ import androidx.appcompat.app.AppCompatDelegate;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -21,16 +24,20 @@ public class SetupPwdActivity extends AppCompatActivity {
     Button setPwd;
     TextView info;
     ToggleButton togglebutton;
+    SharedPreferences sharedPreferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup_pwd);
+        if(!isConnected()){
+            startActivity(new Intent(SetupPwdActivity.this, NoInternetActivity.class));
+        }
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             Window w = getWindow();
             w.setFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS, WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         }
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref",MODE_PRIVATE);
+        sharedPreferences = getSharedPreferences("pref",MODE_PRIVATE);
         currentPwd = findViewById(R.id.currentPwd);
         pwd = findViewById(R.id.pwd);
         confirmPwd = findViewById(R.id.confirmPwd);
@@ -60,7 +67,7 @@ public class SetupPwdActivity extends AppCompatActivity {
                     myEdit.commit();
 
                     if(str.equals("change") || str.equals("setup")){
-                        SharedPreferences sh = getSharedPreferences("MySharedPref", Context.MODE_PRIVATE);
+                        SharedPreferences sh = getSharedPreferences("pref", Context.MODE_PRIVATE);
                         String s1 = sh.getString("password", "");
                         if(!s1.trim().equals("")){
                             startActivity(new Intent(SetupPwdActivity.this, SecurityActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -91,16 +98,12 @@ public class SetupPwdActivity extends AppCompatActivity {
                     myEdit.commit();
 
                     if(str.equals("change") || str.equals("setup")){
-                        SharedPreferences sh = getSharedPreferences("MySharedPref", Context.MODE_PRIVATE);
+                        SharedPreferences sh = getSharedPreferences("pref", Context.MODE_PRIVATE);
                         String s1 = sh.getString("password", "");
                         if(!s1.trim().equals("")){
                             startActivity(new Intent(SetupPwdActivity.this, SecurityActivity.class).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
                         }
                     }
-
-
-
-
                 }
             });
         }
@@ -112,11 +115,23 @@ public class SetupPwdActivity extends AppCompatActivity {
 
 
     public void onToggleClick(View view) {
-        SharedPreferences sharedPreferences = getSharedPreferences("MySharedPref",MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("pref",MODE_PRIVATE);
         SharedPreferences.Editor myEdit = sharedPreferences.edit();
 
 
         myEdit.putBoolean("fp", togglebutton.isChecked());
         myEdit.commit();
+    }
+    public boolean isConnected() {
+        boolean connected = false;
+        try {
+            ConnectivityManager cm = (ConnectivityManager)getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo nInfo = cm.getActiveNetworkInfo();
+            connected = nInfo != null && ((NetworkInfo) nInfo).isAvailable() && nInfo.isConnected();
+            return connected;
+        } catch (Exception e) {
+            Log.e("Connectivity Exception", e.getMessage());
+        }
+        return connected;
     }
 }
