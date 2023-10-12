@@ -1,21 +1,14 @@
 package com.example.myinventory;
 
-import static android.content.ContentValues.TAG;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
-import android.app.DatePickerDialog;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -23,38 +16,25 @@ import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
-import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
-import com.example.myinventory.ui.credits.Credit;
 import com.example.myinventory.ui.home.Items;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.android.material.textfield.TextInputLayout;
-import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 public class ReallocateItemActivity extends AppCompatActivity {
     private FirebaseFirestore db;
@@ -172,29 +152,28 @@ public class ReallocateItemActivity extends AppCompatActivity {
                             alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    if(!toShop[0].trim().equals("")){
-                                        int oldQuantity = i.getQuantity();
-                                        i.setQuantity(oldQuantity-quantity.getValue());
-                                        db.collection("Items").document(d.getId()).set(i).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void unused) {
+                                    if(!toShop[0].trim().equals("") && toShop[0] != null){
+                                        if(quantity.getValue() > 0){
+                                            int oldQuantity = i.getQuantity();
+                                            i.setQuantity(oldQuantity-quantity.getValue());
+                                            db.collection("Items").document(d.getId()).set(i).addOnSuccessListener(unused -> {
                                                 i.setShopId(nameToId.get(toShop[0]));
                                                 i.setQuantity(quantity.getValue());
-                                                db.collection("Items").add(i).addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
-                                                    @Override
-                                                    public void onSuccess(DocumentReference documentReference) {
-                                                        quantityTV.setText(oldQuantity-quantity.getValue());
-                                                        if(oldQuantity-quantity.getValue() == 0){
-                                                            ll.removeView(layout);
-                                                        }
+                                                db.collection("Items").add(i).addOnSuccessListener(documentReference -> {
+                                                    quantityTV.setText(oldQuantity-quantity.getValue()+"");
+                                                    if(oldQuantity-quantity.getValue() == 0){
+                                                        ll.removeView(layout);
                                                     }
                                                 });
-                                            }
-                                        });
+                                            });
+                                        }else{
+                                            Toast.makeText(ReallocateItemActivity.this, "Quantity can not be zero", Toast.LENGTH_SHORT).show();
+                                        }
+//
                                     }else {
                                         Toast.makeText(ReallocateItemActivity.this, "No shop selected", Toast.LENGTH_SHORT).show();
                                     }
-
+//                                    Toast.makeText(ReallocateItemActivity.this, toShop[0]+toShop[0].trim().equals(""), Toast.LENGTH_SHORT).show();
                                         }
                             });
                             AlertDialog dialog = alert.create();
@@ -205,12 +184,7 @@ public class ReallocateItemActivity extends AppCompatActivity {
                     }
                 }
             }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                System.out.println(e +" exception two");
-            }
-        });
+        }).addOnFailureListener(e -> System.out.println(e +" exception two"));
     }
     void update(String id, int amount){
 

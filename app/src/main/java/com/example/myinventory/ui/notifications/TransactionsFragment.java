@@ -167,7 +167,8 @@ public class TransactionsFragment extends Fragment {
                     List<DocumentSnapshot> list = queryDocumentSnapshots.getDocuments();
                     for (DocumentSnapshot d : list) {
 
-                        View view = getLayoutInflater().inflate(R.layout.table_view, null, false);
+
+                        View view = inflater.inflate(R.layout.table_view, null, false);
 
                         counter++;
                         TextView itemTV = view.findViewById(R.id.item);
